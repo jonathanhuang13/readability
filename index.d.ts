@@ -1,3 +1,12 @@
+export type ReadabilityElement = Element & {
+  readability?: ReadabilityMetadata;
+};
+
+export type ReadabilityMetadata = {
+  contentScore: number;
+  original?: Element;
+};
+
 /**
  * Decides whether or not the document is reader-able without parsing the whole thing.
  * @return {boolean} Whether or not we suspect Readability.parse() will suceeed at returning an article object.
@@ -60,5 +69,8 @@ export class Readability<T = string> {
 
     /** published time */
     publishedTime: string | null | undefined;
+
+    /** list of nodes */
+    contentNodes: ReadabilityElement[];
   };
 }

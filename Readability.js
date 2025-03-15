@@ -1505,6 +1505,8 @@ Readability.prototype = {
         }
       }
 
+      this._addOriginalElements(articleContent); // Added by JH
+
       if (this._debug) {
         this.log("Article content pre-prep: " + articleContent.innerHTML);
       }
@@ -2707,6 +2709,58 @@ Readability.prototype = {
   },
 
   /**
+   * Adds original elements to each element so we can reference them later
+   * after Readability has cleaned the document.
+   *
+   * Added by JH
+   *
+   * @param Element
+   * @return void
+   **/
+  _addOriginalElements(e) {
+    let nodeList = Array.from(e.querySelectorAll("*"));
+
+    this._forEachNode(nodeList, function (node) {
+      if (node.readability) {
+        node.readability.original = node.cloneNode(true); // Clone node to avoid mutating original node (required if we want to compare nodes using `isEqualNode`)
+      } else {
+        node.readability = {
+          original: node.cloneNode(true),
+        };
+      }
+    });
+  },
+
+  /**
+   * Get the flat list of content nodes
+   *
+   * Added by JH
+   *
+   * @param Element
+   * @return void
+   **/
+  _getContentNodes(e) {
+    if (e.getElementsByTagName("main").length) {
+      return e.getElementsByTagName("main")[0].children;
+    }
+
+    let parentNodeOfContent = e;
+    const MIN_CHILDREN_NODES = 8;
+
+    const queue = [parentNodeOfContent];
+    while (queue.length) {
+      const currentNode = queue.shift();
+      if (currentNode.children.length >= MIN_CHILDREN_NODES) {
+        parentNodeOfContent = currentNode;
+        break;
+      }
+      queue.push(...Array.from(currentNode.children));
+    }
+
+    return parentNodeOfContent.children;
+  },
+
+  /**
    * Runs readability.
    *
    * Workflow:
@@ -2775,6 +2829,9 @@ Readability.prototype = {
       excerpt: metadata.excerpt,
       siteName: metadata.siteName || this._articleSiteName,
       publishedTime: metadata.publishedTime,
+
+      // Added by JH
+      contentNodes: this._getContentNodes(articleContent),
     };
   },
 };
