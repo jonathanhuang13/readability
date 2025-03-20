@@ -71,6 +71,6 @@ export class Readability<T = string> {
     publishedTime: string | null | undefined;
 
     /** list of nodes */
-    contentNodes: ReadabilityElement[];
+    contentNodes: HTMLCollectionOf<ReadabilityElement>;
   };
 }
